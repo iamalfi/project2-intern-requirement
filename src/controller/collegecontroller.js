@@ -3,18 +3,20 @@ const internModel = require("../model/InternModel");
 
 //validator and regex====================================================//
 const isValid = function (value) {
-    if (typeof value == "undifined" || value == "null") return false;
-    if (typeof value == "string" && value.trim().length == 0) return false;
+    if (typeof value == "undefined" || value == "null") return false;
+    if (typeof value == "String" && value.trim().length == 0) return false;
 
     return true;
 };
+// this regex takes only lowercase and no spaces.
 const isValidName = function (name) {
     return /^[a-z]*$/.test(name);
 };
+//this regex will take single spaces between words.
 const isValidfname = function (fullName) {
     return /^[a-zA-Z,'.\s]{0,150}$/.test(fullName);
 };
-
+//this regex pattern check the format of http it is the format of simple URL.
 let urlregex =
     /^https?:\/\/(.+\/)+.+(\.(gif|png|jpg|jpeg|webp|svg|psd|bmp|tif))$/i;
 
@@ -52,13 +54,15 @@ const createCollege = async function (req, res) {
 
         //checking for the name
         if (!isValid(name))
-            return res
-                .status(400)
-                .send({ status: false, message: "Please provide the name" });
+            return res.status(400).send({
+                status: false,
+                message: "Please provide the valid name",
+            });
         if (!isValidName(name))
             return res.status(400).send({
                 status: false,
-                message: "Please provide the name in LOWERCASE",
+                message:
+                    "Please provide the name in LOWERCASE and don't give spaces and don't give number also.",
             });
         let uniqueName = await collegeModel.findOne({ name });
         if (uniqueName)
@@ -70,12 +74,13 @@ const createCollege = async function (req, res) {
         if (!isValid(fullName))
             return res.status(400).send({
                 status: false,
-                message: "Please provide the fullname",
+                message: "Please provide the valid fullname",
             });
         if (!isValidfname(fullName))
             return res.status(400).send({
                 status: false,
-                message: "Please provide fullname, only single space allowed ",
+                message:
+                    "Please provide valid fullname, only single space allowed ",
             });
 
         //checking for the logolink
@@ -100,32 +105,43 @@ const createCollege = async function (req, res) {
 
 // get interns data and college data
 const getDetails = async function (req, res) {
-    let data = req.query["collegeName"];
-    if (!data) return res.status(400).send({ msg: "Enter a collgeName" });
+    try {
+        let data = req.query["collegeName"];
+        if (!data) return res.status(400).send({ msg: "Enter a collgeName" });
 
-    let collegeDetails = await collegeModel.findOne({ name: { $eq: data } });
-    if (!collegeDetails) {
-        return res.status(404).send({
-            status: false,
-            msg: `sorry no collage data found with this collegeName `,
+        let collegeDetails = await collegeModel.findOne({
+            name: { $eq: data },
         });
-    } else {
-        let intern = await internModel
-            .find({ collegeId: { $eq: collegeDetails["_id"] } })
-            .select({ isDeleted: 0, createdAt: 0, updatedAt: 0, collegeId: 0 });
-        collegeDetails["_id"] = undefined;
-        if (intern.length == 0) {
-            collegeDetails["interns"] = "This College has no interns";
+        if (!collegeDetails) {
+            return res.status(404).send({
+                status: false,
+                msg: `sorry no college data found with this collegeName `,
+            });
         } else {
-            collegeDetails["interns"] = intern;
+            let intern = await internModel
+                .find({ collegeId: { $eq: collegeDetails["_id"] } })
+                .select({
+                    isDeleted: 0,
+                    createdAt: 0,
+                    updatedAt: 0,
+                    collegeId: 0,
+                });
+            collegeDetails["_id"] = undefined;
+            if (intern.length == 0) {
+                collegeDetails["interns"] = "This College has no interns";
+            } else {
+                collegeDetails["interns"] = intern;
+            }
+            let { name, fullName, logoLink, interns } = collegeDetails; //we are destruction the required key
+            let collegeAndinternDetails = { name, fullName, logoLink, interns };
+            res.status(200).send({
+                status: 200,
+                msg: "here is your filtered data",
+                data: collegeAndinternDetails,
+            });
         }
-        let { name, fullName, logoLink, interns } = collegeDetails; //we are destruction the required key
-        let resObject = { name, fullName, logoLink, interns };
-        res.status(200).send({
-            status: 200,
-            msg: "here is your filtered data",
-            data: resObject,
-        });
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message });
     }
 };
 

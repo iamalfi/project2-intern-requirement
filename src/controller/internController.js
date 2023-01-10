@@ -12,12 +12,10 @@ const createInterns = async function (req, res) {
     try {
         const internData = req.body;
         if (Object.keys(internData).length == 0) {
-            return res
-                .status(400)
-                .send({
-                    status: false,
-                    message: "Please  provide some values",
-                });
+            return res.status(400).send({
+                status: false,
+                message: "Please  provide some values",
+            });
         }
         //Destructure Intern data ----------------------------------
         const { name, mobile, email, collegeName } = internData;
@@ -28,20 +26,16 @@ const createInterns = async function (req, res) {
                 .send({ status: false, message: "Please provide intern name" });
         }
         if (!collegeName) {
-            return res
-                .status(400)
-                .send({
-                    status: false,
-                    message: "Please provide intern collegeName",
-                });
+            return res.status(400).send({
+                status: false,
+                message: "Please provide intern collegeName",
+            });
         }
         if (!mobile) {
-            return res
-                .status(400)
-                .send({
-                    status: false,
-                    message: "Please provide intern mobile",
-                });
+            return res.status(400).send({
+                status: false,
+                message: "Please provide intern mobile",
+            });
         }
         // verifying number with regex--------------------------------
         if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(mobile)) {
@@ -58,12 +52,10 @@ const createInterns = async function (req, res) {
         }
         //checking email is provided or not --------------------------
         if (!email) {
-            return res
-                .status(400)
-                .send({
-                    status: false,
-                    message: "Please provide intern email",
-                });
+            return res.status(400).send({
+                status: false,
+                message: "Please provide intern email",
+            });
         }
         //verifying email with regex-----------------------------
         const verifyEmail = validateEmail(email);
@@ -84,15 +76,13 @@ const createInterns = async function (req, res) {
             .findOne({ name: collegeName })
             .select({ _id: 1 });
         if (!colgId) {
-            return res
-                .status(400)
-                .send({
-                    status: false,
-                    message: "College name is not avilable",
-                });
+            return res.status(400).send({
+                status: false,
+                message: "College name is not avilable",
+            });
         }
         //adding another key collegeId in the object internData --------
-        internData["collegeName"] = undefined; // this key will not be addeed
+        internData["collegeName"] = undefined; // this key will not be added
         internData["collegeId"] = colgId;
 
         const intern = await internModel.create(internData);
