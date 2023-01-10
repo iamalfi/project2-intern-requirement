@@ -5,6 +5,7 @@ const collegeModel = require("../model/collegeModel");
 const validateEmail = function (email) {
     var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     return re.test(email);
+    //it check that at the rate is present or not and also checks whether some string is present before @ or not.
 };
 
 //Create Intern---------------------------------
