@@ -39,9 +39,9 @@ const createInterns = async function (req, res) {
             });
         }
         // verifying number with regex--------------------------------
-        if (!/^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/.test(mobile)) {   //8880344456 918880344456  //+91 8880344456
-            
-            
+        if (!/^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/.test(mobile)) {
+            //8880344456 918880344456  //+91 8880344456
+
             return res
                 .status(400)
                 .send({ status: false, message: "Enter valid mobile number" });

@@ -2,12 +2,7 @@ const collegeModel = require("../model/collegeModel");
 const internModel = require("../model/InternModel");
 
 //validator and regex====================================================//
-const isValid = function (value) {
-    if (typeof value == "undefined" || value == "null") return false;
-    if (typeof value == "String" && value.trim().length == 0) return false;
 
-    return true;
-};
 // this regex takes only lowercase and no spaces.
 const isValidName = function (name) {
     return /^[a-z]*$/.test(name);
@@ -53,11 +48,6 @@ const createCollege = async function (req, res) {
         }
 
         //checking for the name
-        if (!isValid(name))
-            return res.status(400).send({
-                status: false,
-                message: "Please provide the valid name",
-            });
         if (!isValidName(name))
             return res.status(400).send({
                 status: false,
@@ -71,11 +61,6 @@ const createCollege = async function (req, res) {
                 .send({ status: false, messege: "This College already exist" });
 
         //checking for the fullname
-        if (!isValid(fullName))
-            return res.status(400).send({
-                status: false,
-                message: "Please provide the valid fullname",
-            });
         if (!isValidfname(fullName))
             return res.status(400).send({
                 status: false,
@@ -84,11 +69,6 @@ const createCollege = async function (req, res) {
             });
 
         //checking for the logolink
-        if (!isValid(logoLink))
-            return res.status(400).send({
-                status: false,
-                message: "Please provide the logolink",
-            });
         if (!urlregex.test(logoLink))
             return res.status(400).send({
                 status: false,
@@ -121,10 +101,10 @@ const getDetails = async function (req, res) {
             let intern = await internModel
                 .find({ collegeId: { $eq: collegeDetails["_id"] } })
                 .select({
-                    isDeleted: 0,
-                    createdAt: 0,
-                    updatedAt: 0,
-                    collegeId: 0,
+                    name: 1,
+                    email: 1,
+                    mobile: 1,
+                    _id: 1,
                 });
             collegeDetails["_id"] = undefined;
             if (intern.length == 0) {
@@ -147,3 +127,16 @@ const getDetails = async function (req, res) {
 
 module.exports.getDetails = getDetails;
 module.exports.createCollege = createCollege;
+
+exports.getDetails = async (req, res) => {
+    let data = req.query["collegeName"];
+    const collegedetails = await collegeModel.findOne({ name: { $eq: data } });
+    let interndetails = await internModel.find({
+        collegeId: { $eq: collegedetails._id },
+    });
+    collegedetails["collegeName"] = undefined;
+    collegedetails["intern"] = interndetails;
+    let { name, fullName, logoLink, intern } = collegedetails;
+    let result = { name, fullName, logoLink, intern };
+    res.status(200).json({ status: true, data: result });
+};
